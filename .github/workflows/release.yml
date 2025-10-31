@@ -30,8 +30,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.get_version.outputs.TAG_NAME }}
-          release_name: ${{ steps.get_version.outputs.TAG_NAME }}
+          tag_name: ${{ steps.tag_name.outputs.TAG_NAME }}
+          release_name: ${{ steps.tag_name.outputs.TAG_NAME }}
           draft: false
           prerelease: false
       - name: Upload Artifact in Release
