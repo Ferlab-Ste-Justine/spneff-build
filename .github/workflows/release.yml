@@ -1,0 +1,45 @@
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write 
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build Artifact
+        run: ./build.sh
+      - name: Ensure Artifact Exists
+        run: |
+          if [ ! -f build/snpEff.zip ]; then
+            echo "The expected artifact was not generated during the build. Aborting the release."
+            exit 1
+          fi
+      - name: Get Tag Name
+        id: tag_name
+        run: echo ::set-output name=TAG_NAME::${GITHUB_REF#refs/tags/}
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_version.outputs.TAG_NAME }}
+          release_name: ${{ steps.get_version.outputs.TAG_NAME }}
+          draft: false
+          prerelease: false
+      - name: Upload Artifact in Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: build/snpEff.zip
+          asset_name: snpEff.zip
+          asset_content_type: application/zip
